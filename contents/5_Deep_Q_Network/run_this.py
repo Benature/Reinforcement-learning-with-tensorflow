@@ -19,6 +19,11 @@ def run_maze():
             observation_, reward, done = env.step(action)
 
             RL.store_transition(observation, action, reward, observation_)
+            # print(observation)
+            # print(action)
+            # print(reward)
+            # print(observation_)
+            # input()
 
             if (step > 200) and (step % 5 == 0):
                 RL.learn()
@@ -39,14 +44,16 @@ def run_maze():
 if __name__ == "__main__":
     # maze game
     env = Maze()
-    RL = DeepQNetwork(env.n_actions, env.n_features,
-                      learning_rate=0.01,
-                      reward_decay=0.9,
-                      e_greedy=0.9,
-                      replace_target_iter=200,
-                      memory_size=2000,
-                      # output_graph=True
-                      )
+    RL = DeepQNetwork(
+        env.n_actions,
+        env.n_features,
+        learning_rate=0.01,
+        reward_decay=0.9,
+        e_greedy=0.9,
+        replace_target_iter=200,
+        memory_size=2000,
+        # output_graph=True
+    )
     env.after(100, run_maze)
     env.mainloop()
     RL.plot_cost()

@@ -83,7 +83,6 @@ def rl():
         is_terminated = False
         update_env(S, episode, step_counter)
         while not is_terminated:
-
             A = choose_action(S, q_table)
             S_, R = get_env_feedback(S, A)  # take action & get next state and reward
             q_predict = q_table.loc[S, A]

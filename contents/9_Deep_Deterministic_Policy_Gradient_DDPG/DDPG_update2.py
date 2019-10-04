@@ -18,6 +18,7 @@ import tensorflow as tf
 import numpy as np
 import gym
 import time
+from matplotlib import pyplot as plt
 
 
 #####################  hyper parameters  ####################
@@ -53,7 +54,7 @@ class DDPG(object):
         q = self._build_c(self.S, self.a, )
         a_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Actor')
         c_params = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='Critic')
-        ema = tf.train.ExponentialMovingAverage(decay=1 - TAU)          # soft replacement
+        ema = tf.train.ExponentialMovingAverage(decay=1 - TAU)          # soft replacement Question:ema?
 
         def ema_getter(getter, name, *args, **kwargs):
             return ema.average(getter(name, *args, **kwargs))
@@ -73,7 +74,9 @@ class DDPG(object):
         self.sess.run(tf.global_variables_initializer())
 
     def choose_action(self, s):
-        return self.sess.run(self.a, {self.S: s[np.newaxis, :]})[0]
+        out = self.sess.run(self.a, {self.S: s[np.newaxis,:]})
+        # print(out); input()
+        return out[0]
 
     def learn(self):
         indices = np.random.choice(MEMORY_CAPACITY, size=BATCH_SIZE)
@@ -122,8 +125,12 @@ a_bound = env.action_space.high
 
 ddpg = DDPG(a_dim, s_dim, a_bound)
 
+print(s_dim, a_dim, a_bound)
+
 var = 3  # control exploration
 t1 = time.time()
+
+Rs = []
 for i in range(MAX_EPISODES):
     s = env.reset()
     ep_reward = 0
@@ -132,9 +139,12 @@ for i in range(MAX_EPISODES):
             env.render()
 
         # Add exploration noise
+        # print(s); input()
         a = ddpg.choose_action(s)
         a = np.clip(np.random.normal(a, var), -2, 2)    # add randomness to action selection for exploration
+        print(a); input()
         s_, r, done, info = env.step(a)
+        # print(s_, r, done, info); input() 
 
         ddpg.store_transition(s, a, r / 10, s_)
 
@@ -144,9 +154,14 @@ for i in range(MAX_EPISODES):
 
         s = s_
         ep_reward += r
-        if j == MAX_EP_STEPS-1:
+        if j == MAX_EP_STEPS - 1:
+            Rs.append(ep_reward)
             print('Episode:', i, ' Reward: %i' % int(ep_reward), 'Explore: %.2f' % var, )
             # if ep_reward > -300:RENDER = True
             break
 
 print('Running time: ', time.time() - t1)
+
+plt.plot(list(range(len(Rs))), Rs)
+
+plt.savefig("reward.png")
