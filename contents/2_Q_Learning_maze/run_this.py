@@ -29,6 +29,10 @@ def update():
             action = RL.choose_action(str(observation))
 
             # RL take action and get next observation and reward
+            '''
+            observation就是state, 
+            `observation_`是`env_step()`后走到的下一步
+            '''
             observation_, reward, done = env.step(action)
 
             # RL learn from this transition
